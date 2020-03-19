@@ -212,6 +212,12 @@ start_rules() {
 		gfwmode="-g"
 	elif [ "$run_mode" == "router" ]; then
 		gfwmode="-r"
+	# kylecui
+	# add geoip mode
+	# begin
+	elif [ "$run_mode" == "geoip" ]; then
+		gfwmode="-E"
+	# end	
 	elif [ "$run_mode" == "oversea" ]; then
 		gfwmode="-c"
 	elif [ "$run_mode" == "all" ]; then

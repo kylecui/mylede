@@ -226,6 +226,13 @@ msgstr "运行模式"
 msgid "IP Route Mode"
 msgstr "绕过中国大陆IP模式"
 
+#. kylecui
+#. add geoip mode
+#. begin	
+msgid "GeoIP Route Mode"	
+msgstr "使用地理位置IP路由模式"	
+#. end
+
 msgid "GFW List Mode"
 msgstr "GFW列表模式"
 

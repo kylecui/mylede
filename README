@@ -1,4 +1,21 @@
-﻿Welcome to Lean's  git source of OpenWrt and packages
+﻿coolsnowwolf's openwrt is terrific, however it does not support geoip based routing. 
+
+added the support of geoip module. Basically, still needs to follow the oroginal instructions to build, however the following are needed. 
+
+1. geoip  module support in iptables 
+CONFIG_PACKAGE_iptables-mod-geoip=y
+CONFIG_PACKAGE_iptgeoip=y
+CONFIG_PACKAGE_kmod-ipt-geoip=y
+
+2. need to create an xt_geoip folder under /usr/share with geo ip information. 
+reference: https://linoxide.com/linux-how-to/block-ips-countries-geoip-addons/
+----------------------------------------------
+----------------------------------------------
+    below are the oringial instructions
+----------------------------------------------
+----------------------------------------------
+
+Welcome to Lean's  git source of OpenWrt and packages
 
 中文：如何编译自己需要的 OpenWrt 固件
 

@@ -11,6 +11,7 @@ TAG="_SS_SPEC_RULE_"                                  # comment tag
 IPT="iptables -t nat"                                 # alias of iptables
 FWI=$(uci get firewall.shadowsocksr.path 2>/dev/null) # firewall include file
 
+# add a geoip mode option -E
 usage() {
 	cat <<-EOF
 Usage: ssr-rules [options]
@@ -38,6 +39,7 @@ Valid options are:
                             and ports for TCP and UDP
     -f                      flush the rules
     -g                      gfw list mode
+	-E						GeoIP mode
     -r                      return china mode
     -h                      show this help message and exit
 	EOF
@@ -88,6 +90,20 @@ ipset_r() {
 		$IPT -I SS_SPEC_WAN_AC -p tcp ! --dport 53 -d $server -j RETURN
 		$IPT -A SS_SPEC_WAN_AC -m set --match-set ss_spec_wan_ac dst -j RETURN
 		$IPT -A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
+	# kylecui
+	# add geoip mode
+	# begin	
+	elif [ "$RUNMODE" == "geoip" ]; then
+		ipset -! -R <<-EOF || return 1
+			create ss_spec_wan_ac hash:net
+			$(gen_iplist | sed -e "s/^/add ss_spec_wan_ac /")
+		EOF
+		ipset -N gfwlist hash:net 2>/dev/null
+		$IPT -N SS_SPEC_WAN_AC
+		$IPT -I SS_SPEC_WAN_AC -p tcp ! --dport 53 -d $server -j RETURN
+		$IPT -A SS_SPEC_WAN_AC -m geoip --destination-country CN -j RETURN 
+		$IPT -A SS_SPEC_WAN_AC -j SS_SPEC_WAN_FW
+	# end
 	elif [ "$RUNMODE" == "gfw" ]; then
 		ipset -N gfwlist hash:net 2>/dev/null
 		$IPT -N SS_SPEC_WAN_AC
@@ -214,6 +230,15 @@ tp_rule() {
 		-j TPROXY --on-port "$LOCAL_PORT" --tproxy-mark 0x01/0x01
 		$ipt -A SS_SPEC_TPROXY -p udp $PROXY_PORTS -m set ! --match-set ss_spec_wan_ac dst \
 		-j TPROXY --on-port "$LOCAL_PORT" --tproxy-mark 0x01/0x01
+	# kylecui
+	# add geoip mode
+	# begin	
+	elif [ "$RUNMODE" == "geoip" ]; then
+		$ipt -A SS_SPEC_TPROXY -p udp -m set --match-set gmlan src -m geoip ! --destination-country CN \
+		-j TPROXY --on-port "$LOCAL_PORT" --tproxy-mark 0x01/0x01
+		$ipt -A SS_SPEC_TPROXY -p udp $PROXY_PORTS -m set ! --match-set ss_spec_wan_ac dst \
+		-j TPROXY --on-port "$LOCAL_PORT" --tproxy-mark 0x01/0x01
+	# end
 	elif [ "$RUNMODE" == "gfw" ]; then
 		$ipt -A SS_SPEC_TPROXY -p udp -m set --match-set china dst -j RETURN
 		$ipt -A SS_SPEC_TPROXY -p udp -m set --match-set gmlan src -m set ! --match-set china dst \
@@ -302,7 +327,9 @@ gen_include() {
 	return 0
 }
 
-while getopts ":s:l:S:L:i:e:a:B:b:w:p:G:D:F:N:M:oOuUfgrczh" arg; do
+# add geoip mode
+#while getopts ":s:l:S:L:i:e:a:B:b:w:p:G:D:F:N:M:oOuUfgrczh" arg; do
+while getopts ":s:l:S:L:i:e:a:B:b:w:p:G:D:F:N:M:oOuUfgrEczh" arg; do
 	case "$arg" in
 	s)
 		server=$OPTARG
@@ -370,6 +397,13 @@ while getopts ":s:l:S:L:i:e:a:B:b:w:p:G:D:F:N:M:oOuUfgrczh" arg; do
 	r)
 		RUNMODE=router
 		;;
+	# kylecui
+	# add geoip mode
+	# begin
+	E)
+		RUNMODE=geoip
+		;;
+	# end
 	c)
 		RUNMODE=oversea
 		;;

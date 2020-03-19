@@ -70,6 +70,11 @@ o.rmempty = false
 o = s:option(ListValue, "run_mode", translate("Running Mode"))
 o:value("gfw", translate("GFW List Mode"))
 o:value("router", translate("IP Route Mode"))
+-- kylecui --
+-- Add the geoip option in run_mode selection list --
+-- [ begin ] --
+o:value("geoip", translate("GeoIP Route Mode"))	
+-- [ end ] --
 o:value("all", translate("Global Mode"))
 o:value("oversea", translate("Oversea Mode"))
 o.default = gfw
